@@ -1,0 +1,34 @@
+---
+# ==========================================================================
+# Ansible Galaxy requirements (PLACEHOLDER)
+# ==========================================================================
+# Declare the collections and roles your playbooks depend on here. They are
+# installed:
+#   * at image build time (baked into the container), and
+#   * at runtime via `automation install` (or INSTALL_REQUIREMENTS_ON_START=true)
+#     when this file is mounted into the container.
+#
+# This file is safe to leave empty. Uncomment the examples or add your own.
+#
+# Reference:
+#   https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-multiple-collections-and-roles
+# ==========================================================================
+
+collections: []
+  # - name: community.general
+  # - name: ansible.posix
+  # - name: community.docker
+  # - name: kubernetes.core
+  #   version: ">=3.0.0"
+  # - name: https://github.com/org/collection.git
+  #   type: git
+  #   version: main
+
+roles: []
+  # - name: geerlingguy.docker
+  # - name: geerlingguy.nginx
+  #   version: "3.1.4"
+  # - src: https://github.com/org/ansible-role-example.git
+  #   scm: git
+  #   version: main
+  #   name: example

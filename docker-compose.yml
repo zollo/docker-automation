@@ -1,0 +1,42 @@
+# Convenience compose file for local use.
+#
+#   docker compose run --rm automation ansible site.yml   # one-off CLI run
+#   docker compose run --rm automation terraform infra plan
+#   docker compose up web                                  # optional web UI
+#
+# Pull the published image instead of building by setting:
+#   IMAGE=ghcr.io/zollo/docker-automation:latest docker compose up web
+
+x-common: &common
+  image: ${IMAGE:-ghcr.io/zollo/docker-automation:latest}
+  build:
+    context: .
+    args:
+      TERRAFORM_VERSION: ${TERRAFORM_VERSION:-1.10.5}
+  environment:
+    # Re-install mounted requirements files on start (set true if you mount them)
+    INSTALL_REQUIREMENTS_ON_START: ${INSTALL_REQUIREMENTS_ON_START:-false}
+  volumes:
+    # User content — mount your real playbooks / inventory / projects here
+    - ./automation/ansible:/automation/ansible
+    - ./automation/terraform:/automation/terraform
+    - ./automation/logs:/automation/logs
+    # Mount requirements to manage collections/roles/plugins without rebuilding
+    - ./requirements:/opt/automation/requirements:ro
+
+services:
+  # Console-first service. No ports, no web dependency.
+  automation:
+    <<: *common
+    command: ["help"]
+
+  # Optional web interface. Nothing else depends on this service.
+  web:
+    <<: *common
+    command: ["web"]
+    environment:
+      WEB_HOST: 0.0.0.0
+      WEB_PORT: 8080
+      INSTALL_REQUIREMENTS_ON_START: ${INSTALL_REQUIREMENTS_ON_START:-false}
+    ports:
+      - "${WEB_PORT:-8080}:8080"

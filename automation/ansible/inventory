@@ -1,0 +1,4 @@
+# Sample inventory — auto-attached via -i when no inventory is specified.
+# Replace with your own hosts/groups.
+[local]
+localhost ansible_connection=local

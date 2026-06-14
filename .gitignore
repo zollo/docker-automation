@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Generated run logs (keep the directory, ignore contents)
+automation/logs/*
+!automation/logs/.gitkeep
+
+# Terraform local state & cache
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Ansible local artifacts
+*.retry
+
+# Secrets / vault (never commit)
+*.vault
+vault-password*
+.env
+
+# Editor cruft
+.idea/
+.vscode/
+*.swp
+.DS_Store

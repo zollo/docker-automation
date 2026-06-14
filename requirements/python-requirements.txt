@@ -1,0 +1,23 @@
+# ==========================================================================
+# Python requirements (PLACEHOLDER)
+# ==========================================================================
+# Add Python packages your automation needs here, for example:
+#   * Python libraries required by Ansible modules (boto3, kubernetes, pywinrm)
+#   * Cloud SDKs used by Terraform external data sources / scripts
+#   * Custom Ansible module/plugin dependencies
+#
+# These are installed:
+#   * at image build time (baked into the container), and
+#   * at runtime via `automation install` (or INSTALL_REQUIREMENTS_ON_START=true)
+#     when this file is mounted into the container.
+#
+# This file is safe to leave empty (pip simply installs nothing).
+#
+# Examples:
+# boto3>=1.34
+# botocore>=1.34
+# kubernetes>=29
+# pywinrm>=0.4
+# netaddr>=1.2
+# jmespath>=1.0
+# google-auth>=2.29

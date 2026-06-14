@@ -1,0 +1,128 @@
+:root {
+  --bg: #0f1419;
+  --bg-alt: #161c23;
+  --panel: #1c242d;
+  --border: #2a333d;
+  --fg: #d7dee6;
+  --muted: #7c8a99;
+  --accent: #4ea1ff;
+  --green: #43d17a;
+  --red: #ff6b6b;
+  --amber: #ffb454;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 18px;
+  height: 52px;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.logo { color: var(--accent); font-size: 20px; }
+.tabs { display: flex; gap: 4px; }
+.tab {
+  background: transparent; border: none; color: var(--muted);
+  padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 14px;
+}
+.tab:hover { color: var(--fg); }
+.tab.active { color: var(--fg); background: var(--panel); }
+.paths { margin-left: auto; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+
+main { flex: 1 1 auto; min-height: 0; }
+.panel { display: none; height: 100%; }
+.panel.active { display: block; }
+
+/* Run layout */
+.run-layout, .logs-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  height: 100%;
+}
+.controls {
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+}
+.field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; color: var(--muted); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.muted { color: var(--muted); font-weight: 400; }
+
+input[type=text], input:not([type]), select {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--mono);
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+.seg { display: flex; gap: 14px; }
+.seg label, .checks label { font-size: 13px; color: var(--fg); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.checks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+.actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+button {
+  background: var(--panel); border: 1px solid var(--border); color: var(--fg);
+  padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #04101f; }
+button.danger { color: var(--red); }
+.status { font-size: 12px; color: var(--muted); }
+.status.running { color: var(--amber); }
+.status.ok { color: var(--green); }
+.status.fail { color: var(--red); }
+
+/* Console */
+.console-wrap, .log-view-wrap { display: flex; flex-direction: column; min-width: 0; height: 100%; }
+.console-head, .logs-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-alt); font-size: 13px; flex: 0 0 auto;
+}
+.console {
+  flex: 1 1 auto; margin: 0; padding: 12px 14px;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.5;
+  overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.console .cmd { color: var(--accent); }
+.console .ok { color: var(--green); }
+.console .err { color: var(--red); }
+.console .meta { color: var(--muted); }
+
+/* Logs */
+.logs-list-wrap { border-right: 1px solid var(--border); background: var(--bg-alt); display: flex; flex-direction: column; }
+.logs-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+.logs-list li {
+  padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 12px;
+}
+.logs-list li:hover { background: var(--panel); }
+.logs-list li.active { background: var(--panel); border-left: 3px solid var(--accent); }
+.logs-list .name { font-family: var(--mono); color: var(--fg); display: block; word-break: break-all; }
+.logs-list .meta { color: var(--muted); font-size: 11px; }
+.logs-head button { padding: 2px 8px; }

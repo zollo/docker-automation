@@ -1,0 +1,109 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Lint the Dockerfile and shell scripts
+  # ---------------------------------------------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Dockerfile (hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+      - name: Lint shell scripts (shellcheck)
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          shellcheck entrypoint.sh bin/automation scripts/*.sh
+
+  # ---------------------------------------------------------------------
+  # Build, smoke-test, and (on non-PR events) publish to GHCR
+  # ---------------------------------------------------------------------
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Build a single-arch image first, load it locally, and smoke test it.
+      - name: Build image for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: automation:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test the image
+        run: |
+          set -euxo pipefail
+          docker run --rm automation:test ansible --version
+          docker run --rm automation:test terraform version
+          docker run --rm automation:test help
+          docker run --rm automation:test version
+          # CLI runs the bundled samples end to end (no network required)
+          docker run --rm automation:test automation ansible site.yml
+          docker run --rm automation:test /bin/bash -lc \
+            "automation terraform example init && automation terraform example apply"
+          # Web stack imports cleanly (optional interface, not a hard dep)
+          docker run --rm -w /opt/automation/web automation:test \
+            python -c "import app; print('web interface import ok')"
+
+      # Publish multi-arch image on pushes/tags (never on PRs).
+      - name: Build and push
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

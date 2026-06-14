@@ -1,0 +1,21 @@
+---
+# Sample playbook — safe to run anywhere, targets localhost only.
+# Replace with (or mount over) your own content.
+- name: Automation toolbox smoke test
+  hosts: all
+  gather_facts: false
+  vars:
+    greeting: "hello from the automation container"
+  tasks:
+    - name: Show a message
+      ansible.builtin.debug:
+        msg: "{{ greeting }} (env={{ env | default('dev') }})"
+
+    - name: Report Ansible version
+      ansible.builtin.command: ansible --version
+      changed_when: false
+      register: ansible_version
+
+    - name: Print version
+      ansible.builtin.debug:
+        var: ansible_version.stdout_lines
