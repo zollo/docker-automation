@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+#
+# automation — console-first entrypoint for the Ansible + Terraform toolbox.
+#
+# Every run is logged to $AUTOMATION_LOG_DIR so the output is identical whether
+# a command is launched from the console or from the optional web interface.
+#
+set -euo pipefail
+
+AUTOMATION_HOME="${AUTOMATION_HOME:-/automation}"
+AUTOMATION_APP="${AUTOMATION_APP:-/opt/automation}"
+ANSIBLE_DIR="${AUTOMATION_ANSIBLE_DIR:-${AUTOMATION_HOME}/ansible}"
+TERRAFORM_DIR="${AUTOMATION_TERRAFORM_DIR:-${AUTOMATION_HOME}/terraform}"
+LOG_DIR="${AUTOMATION_LOG_DIR:-${AUTOMATION_HOME}/logs}"
+
+mkdir -p "$LOG_DIR"
+
+c_blue='\033[1;34m'; c_green='\033[1;32m'; c_red='\033[1;31m'; c_off='\033[0m'
+info()  { printf "${c_blue}==>${c_off} %s\n" "$*"; }
+ok()    { printf "${c_green}==>${c_off} %s\n" "$*"; }
+err()   { printf "${c_red}==>${c_off} %s\n" "$*" >&2; }
+
+# Run a command while teeing combined output to a timestamped log file.
+# Usage: run_logged <label> <command> [args...]
+run_logged() {
+    local label="$1"; shift
+    local ts log rc
+    ts="$(date +%Y%m%d-%H%M%S)"
+    log="${LOG_DIR}/${ts}-${label}.log"
+    info "Logging to ${log}"
+    {
+        printf '# command: %s\n' "$*"
+        printf '# started: %s\n' "$(date -Is)"
+        printf '# %s\n' "----------------------------------------"
+    } > "$log"
+    set +e
+    "$@" 2>&1 | tee -a "$log"
+    rc=${PIPESTATUS[0]}
+    set -e
+    printf '# exited: %s\n' "$rc" | tee -a "$log" >/dev/null
+    if [ "$rc" -eq 0 ]; then ok "Completed (exit ${rc})"; else err "Failed (exit ${rc})"; fi
+    return "$rc"
+}
+
+list_playbooks() {
+    info "Playbooks under ${ANSIBLE_DIR}:"
+    if [ -d "$ANSIBLE_DIR" ]; then
+        ( cd "$ANSIBLE_DIR" && \
+          find . -maxdepth 1 -type f \( -name '*.yml' -o -name '*.yaml' \) -printf '  %P\n' ; \
+          [ -d playbooks ] && find playbooks -type f \( -name '*.yml' -o -name '*.yaml' \) -printf '  %p\n' ) \
+          | sort -u
+    fi
+}
+
+list_tf_projects() {
+    info "Terraform projects under ${TERRAFORM_DIR}:"
+    if [ -d "$TERRAFORM_DIR" ]; then
+        ( cd "$TERRAFORM_DIR" && find . -type f -name '*.tf' -printf '%h\n' | sed 's|^\./||' | sort -u | sed 's|^|  |' )
+    fi
+}
+
+cmd_ansible() {
+    local playbook="${1:-}"
+    if [ -z "$playbook" ]; then
+        err "usage: automation ansible <playbook> [ansible-playbook args...]"
+        list_playbooks
+        return 1
+    fi
+    shift
+
+    # Resolve the playbook relative to the ansible dir unless an explicit path exists.
+    local pb="$playbook"
+    if [ ! -f "$pb" ] && [ -f "${ANSIBLE_DIR}/${playbook}" ]; then
+        pb="${ANSIBLE_DIR}/${playbook}"
+    fi
+    if [ ! -f "$pb" ]; then
+        err "Playbook not found: ${playbook}"
+        list_playbooks
+        return 1
+    fi
+
+    # Auto-attach an inventory if one is present and the caller didn't pass -i.
+    local inv_args=()
+    if [[ " $* " != *" -i "* && " $* " != *" --inventory "* ]]; then
+        if [ -e "${ANSIBLE_DIR}/inventory" ]; then
+            inv_args=(-i "${ANSIBLE_DIR}/inventory")
+        fi
+    fi
+
+    ( cd "$ANSIBLE_DIR" && run_logged "ansible" ansible-playbook "$pb" "${inv_args[@]}" "$@" )
+}
+
+cmd_terraform() {
+    local project="${1:-}"
+    if [ -z "$project" ]; then
+        err "usage: automation terraform <project> <init|plan|apply|destroy|...> [args...]"
+        list_tf_projects
+        return 1
+    fi
+    shift
+
+    local dir="${TERRAFORM_DIR}/${project}"
+    [ -d "$dir" ] || dir="$project"   # allow an absolute / cwd-relative path
+    if [ ! -d "$dir" ]; then
+        err "Terraform project not found: ${project}"
+        list_tf_projects
+        return 1
+    fi
+    if [ "$#" -eq 0 ]; then
+        err "No terraform command given (e.g. plan, apply, destroy)."
+        return 1
+    fi
+
+    local label
+    label="terraform-$(printf '%s' "$project" | tr '/ ' '--')"
+    ( cd "$dir" && run_logged "$label" terraform "$@" )
+}
+
+cmd_logs() {
+    local name="${1:-}"
+    if [ -z "$name" ]; then
+        info "Logs in ${LOG_DIR}:"
+        # shellcheck disable=SC2012  # ls -t gives us recency ordering simply
+        ls -1t "$LOG_DIR" 2>/dev/null | sed 's|^|  |' || true
+        return 0
+    fi
+    local path="${LOG_DIR}/${name}"
+    [ -f "$path" ] || path="$name"
+    if [ ! -f "$path" ]; then
+        err "Log not found: ${name}"
+        return 1
+    fi
+    cat "$path"
+}
+
+usage() {
+    cat <<EOF
+automation — Ansible + Terraform toolbox
+
+USAGE:
+  automation <command> [args...]
+
+COMMANDS:
+  ansible <playbook> [args...]      Run an Ansible playbook (logged)
+  terraform <project> <cmd> [args]  Run Terraform in a project dir (logged)
+  install                           Install requirements (collections/roles/pip)
+  web                               Start the optional web interface
+  logs [name]                       List run logs, or print one
+  playbooks                         List discovered playbooks
+  projects                          List discovered Terraform projects
+  shell                             Open an interactive shell
+  version                           Show tool versions
+  help                              Show this help
+
+PATHS (override via env):
+  Ansible content   ${ANSIBLE_DIR}
+  Terraform content ${TERRAFORM_DIR}
+  Run logs          ${LOG_DIR}
+
+EXAMPLES:
+  automation ansible site.yml --limit web --extra-vars 'env=stage'
+  automation terraform infra plan
+  automation terraform infra apply -auto-approve
+  automation install
+  automation web
+EOF
+}
+
+main() {
+    local cmd="${1:-help}"
+    shift || true
+    case "$cmd" in
+        ansible)            cmd_ansible "$@" ;;
+        terraform|tf)       cmd_terraform "$@" ;;
+        install)            exec "${AUTOMATION_APP}/scripts/install-requirements.sh" ;;
+        web)                exec "${AUTOMATION_APP}/scripts/run-web.sh" "$@" ;;
+        logs)               cmd_logs "$@" ;;
+        playbooks)          list_playbooks ;;
+        projects)           list_tf_projects ;;
+        shell|bash)         exec /bin/bash ;;
+        version|--version)  ansible --version; echo; terraform version ;;
+        help|--help|-h)     usage ;;
+        *)
+            err "Unknown command: ${cmd}"
+            usage
+            return 1
+            ;;
+    esac
+}
+
+main "$@"

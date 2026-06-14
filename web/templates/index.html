@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automation Console</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚙</span>
+      <span>Automation Console</span>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="run">Run</button>
+      <button class="tab" data-tab="logs">Logs</button>
+    </nav>
+    <div class="paths" id="paths"></div>
+  </header>
+
+  <main>
+    <!-- ============================ RUN TAB ============================ -->
+    <section id="tab-run" class="panel active">
+      <div class="run-layout">
+        <form id="run-form" class="controls">
+          <div class="field">
+            <label>Tool</label>
+            <div class="seg">
+              <label><input type="radio" name="tool" value="ansible" checked /> Ansible</label>
+              <label><input type="radio" name="tool" value="terraform" /> Terraform</label>
+            </div>
+          </div>
+
+          <!-- Ansible-specific controls -->
+          <div class="tool-group" data-tool="ansible">
+            <div class="field">
+              <label for="ans-playbook">Playbook</label>
+              <select id="ans-playbook" name="target"></select>
+            </div>
+            <div class="field">
+              <label for="ans-inventory">Inventory <span class="muted">(optional)</span></label>
+              <select id="ans-inventory" name="inventory">
+                <option value="">auto / default</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ans-extravars">Extra vars <span class="muted">(key=val or JSON)</span></label>
+              <input id="ans-extravars" name="extra_vars" placeholder="env=stage region=us-east-1" />
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="ans-limit">Limit</label>
+                <input id="ans-limit" name="limit" placeholder="webservers" />
+              </div>
+              <div class="field">
+                <label for="ans-tags">Tags</label>
+                <input id="ans-tags" name="tags" placeholder="deploy,config" />
+              </div>
+            </div>
+            <div class="checks">
+              <label><input type="checkbox" name="check" /> Check mode (dry run)</label>
+              <label><input type="checkbox" name="verbose" /> Verbose (-vvv)</label>
+            </div>
+          </div>
+
+          <!-- Terraform-specific controls -->
+          <div class="tool-group" data-tool="terraform" hidden>
+            <div class="field">
+              <label for="tf-project">Project</label>
+              <select id="tf-project" name="tf-target"></select>
+            </div>
+            <div class="field">
+              <label for="tf-command">Command</label>
+              <select id="tf-command" name="command"></select>
+            </div>
+            <div class="field">
+              <label for="tf-vars">Variables <span class="muted">(key=val, space separated)</span></label>
+              <input id="tf-vars" name="tf-extra_vars" placeholder="region=us-east-1 count=3" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="extra-args">Extra raw args <span class="muted">(advanced)</span></label>
+            <input id="extra-args" name="args" placeholder="--diff" />
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="run-btn" class="primary">▶ Run</button>
+            <button type="button" id="stop-btn" class="danger" disabled>■ Stop</button>
+            <button type="button" id="clear-btn">Clear</button>
+            <span id="status" class="status"></span>
+          </div>
+        </form>
+
+        <div class="console-wrap">
+          <div class="console-head">
+            <span id="console-title">Live console</span>
+            <span id="console-log" class="muted"></span>
+          </div>
+          <pre id="console" class="console"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ LOGS TAB =========================== -->
+    <section id="tab-logs" class="panel">
+      <div class="logs-layout">
+        <div class="logs-list-wrap">
+          <div class="logs-head">
+            <span>Run logs</span>
+            <button type="button" id="refresh-logs">⟳</button>
+          </div>
+          <ul id="logs-list" class="logs-list"></ul>
+        </div>
+        <div class="log-view-wrap">
+          <div class="console-head">
+            <span id="log-view-title">Select a log</span>
+          </div>
+          <pre id="log-view" class="console"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

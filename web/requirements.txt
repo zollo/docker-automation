@@ -1,0 +1,6 @@
+# Optional web interface stack. Only imported when running in `web` mode.
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29
+jinja2>=3.1
+python-multipart>=0.0.9
+websockets>=12.0

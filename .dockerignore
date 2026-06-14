@@ -1,0 +1,32 @@
+# VCS / CI
+.git
+.gitignore
+.github
+
+# Docs / local-only
+*.md
+!README.md
+docs
+
+# Python caches
+__pycache__
+**/__pycache__
+*.pyc
+.venv
+venv
+
+# Terraform local state & cache (never bake user state into the image)
+**/.terraform
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
+**/crash.log
+
+# Generated run logs
+automation/logs/*
+!automation/logs/.gitkeep
+
+# Editor cruft
+.idea
+.vscode
+*.swp
