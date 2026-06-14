@@ -143,6 +143,21 @@ toolbox is fully usable without ever starting the web server. Configure it with:
 | `WEB_HOST`| `0.0.0.0` | Bind address       |
 | `WEB_PORT`| `8080`    | Port               |
 
+### Screenshots
+
+Running an Ansible playbook with custom params and a live console:
+
+![Run an Ansible playbook](docs/screenshots/01-run-ansible.png)
+
+Running Terraform (auto-`init` + `plan`/`apply`) with variable overrides:
+
+![Run Terraform](docs/screenshots/02-run-terraform.png)
+
+Browsing previous run logs:
+
+![Log viewer](docs/screenshots/03-logs.png)
+
+
 > **Security:** the web UI runs automation tools and only restricts paths to
 > the mounted directories. Treat it as a privileged control plane — keep it on
 > a trusted network or behind an authenticating reverse proxy. Do not expose it
