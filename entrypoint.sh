@@ -45,6 +45,9 @@ case "$cmd" in
     sh)
         exec /bin/sh
         ;;
+    version|--version)
+        exec "${AUTOMATION_APP}/bin/automation" version
+        ;;
     help|--help|-h)
         exec "${AUTOMATION_APP}/bin/automation" help
         ;;
