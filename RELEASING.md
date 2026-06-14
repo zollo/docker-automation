@@ -6,11 +6,15 @@ handles building, testing, and publishing.
 
 ## What publishes when
 
-| Trigger                       | Tags pushed to `ghcr.io/zollo/docker-automation`        |
-| ----------------------------- | ------------------------------------------------------- |
-| Push to `main`                | `latest`, `main`, `sha-<short>`                         |
-| Push a `v*` tag (e.g. `v1.2.3`) | `1.2.3`, `1.2`, `sha-<short>` (+ `latest` if on default) |
-| Pull request                  | builds & smoke-tests only — **no push**                 |
+| Trigger                          | Tags pushed to `ghcr.io/zollo/docker-automation` |
+| -------------------------------- | ------------------------------------------------ |
+| Push to `main` (default branch)  | `latest`, `main`, `sha-<short>`                  |
+| Push to any other branch         | `<branch-name>`, `sha-<short>`                   |
+| Push a `v*` tag (e.g. `v1.2.3`)  | `1.2.3`, `1.2`, `sha-<short>`                    |
+| Pull request                     | builds & smoke-tests only — **no push**          |
+
+`latest` only ever tracks the default branch (`main`) — it is gated by
+`is_default_branch`, so tag and feature-branch pushes never move it.
 
 Tagging is the only step needed to cut a versioned release; the pipeline does
 the rest.
