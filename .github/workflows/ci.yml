@@ -90,7 +90,7 @@ jobs:
           # CLI runs the bundled samples end to end (no network required)
           docker run --rm automation:test automation ansible site.yml
           docker run --rm automation:test /bin/bash -lc \
-            "automation terraform example init && automation terraform example apply"
+            "automation terraform example init && automation terraform example apply -auto-approve"
           # Web stack imports cleanly (optional interface, not a hard dep)
           docker run --rm -w /opt/automation/web automation:test \
             python -c "import app; print('web interface import ok')"
