@@ -178,7 +178,8 @@ and PR:
    image and push to `ghcr.io/<owner>/<repo>` using the built-in `GITHUB_TOKEN`
 
 Image tags follow the branch/tag/sha, plus `latest` on the default branch and
-semver tags for `v*` releases.
+semver tags for `v*` releases. See [`RELEASING.md`](RELEASING.md) for how to
+cut a versioned release.
 
 ### Configuration knobs
 
