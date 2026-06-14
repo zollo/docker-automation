@@ -78,7 +78,8 @@ jobs:
           load: true
           tags: automation:test
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Don't let a flaky GitHub Actions cache backend fail the build.
+          cache-to: type=gha,mode=max,ignore-error=true
 
       - name: Smoke test the image
         run: |
@@ -106,4 +107,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # The image push above is what matters; a cache export failure
+          # (e.g. the gha backend returning `not_found`) must not fail publish.
+          cache-to: type=gha,mode=max,ignore-error=true
