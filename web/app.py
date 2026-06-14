@@ -260,8 +260,11 @@ async def api_logs():
 @app.get("/api/logs/{name}", response_class=PlainTextResponse)
 async def api_log_content(name: str):
     name = secure_name(name)
-    path = LOG_DIR / name
-    if not path.is_file():
+    base = LOG_DIR.resolve()
+    # resolve() follows symlinks, so a symlinked log pointing outside LOG_DIR
+    # resolves to a path whose parent is no longer base and is rejected.
+    path = (base / name).resolve()
+    if base not in path.parents or not path.is_file():
         raise HTTPException(status_code=404, detail="log not found")
     return path.read_text(errors="replace")
 

@@ -23,9 +23,9 @@ fi
 
 if [ -f "$GALAXY_REQ" ]; then
     log "Installing Ansible collections from ${GALAXY_REQ} into ${COLLECTIONS_PATH}"
-    ansible-galaxy collection install -r "$GALAXY_REQ" -p "$COLLECTIONS_PATH" || true
+    ansible-galaxy collection install -r "$GALAXY_REQ" -p "$COLLECTIONS_PATH"
     log "Installing Ansible roles from ${GALAXY_REQ} into ${ROLES_PATH}"
-    ansible-galaxy role install -r "$GALAXY_REQ" -p "$ROLES_PATH" || true
+    ansible-galaxy role install -r "$GALAXY_REQ" -p "$ROLES_PATH"
 else
     log "No ansible-requirements.yml found, skipping Galaxy content."
 fi

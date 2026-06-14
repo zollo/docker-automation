@@ -64,8 +64,8 @@ RUN pip install --no-cache-dir -r /tmp/python-requirements.txt
 # User supplied Ansible collections & roles (placeholder file, safe when empty)
 COPY requirements/ansible-requirements.yml /tmp/ansible-requirements.yml
 RUN set -eux; \
-    ansible-galaxy collection install -r /tmp/ansible-requirements.yml -p "${ANSIBLE_COLLECTIONS_PATH}" || true; \
-    ansible-galaxy role install -r /tmp/ansible-requirements.yml -p "${ANSIBLE_ROLES_PATH}" || true
+    ansible-galaxy collection install -r /tmp/ansible-requirements.yml -p "${ANSIBLE_COLLECTIONS_PATH}"; \
+    ansible-galaxy role install -r /tmp/ansible-requirements.yml -p "${ANSIBLE_ROLES_PATH}"
 
 # ---------------------------------------------------------------------------
 # Application code + CLI

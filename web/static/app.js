@@ -190,9 +190,15 @@ async function loadLogs() {
   }
   data.logs.forEach((log) => {
     const li = document.createElement("li");
-    li.innerHTML =
-      `<span class="name">${log.name}</span>` +
-      `<span class="meta">${log.modified} · ${formatSize(log.size)}</span>`;
+    // Build with textContent — log file names come from a mounted directory
+    // and must never be interpolated as HTML.
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = log.name;
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = `${log.modified} · ${formatSize(log.size)}`;
+    li.append(name, meta);
     li.addEventListener("click", () => {
       $$("#logs-list li").forEach((x) => x.classList.remove("active"));
       li.classList.add("active");

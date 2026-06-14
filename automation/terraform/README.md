@@ -18,12 +18,15 @@ terraform/
 ```bash
 automation terraform example init
 automation terraform example plan
-automation terraform example apply        # adds -auto-approve for you
-automation terraform example destroy
+automation terraform example apply -auto-approve    # non-interactive apply
+automation terraform example destroy -auto-approve
 ```
 
 `automation terraform <project> <cmd>` runs `terraform` inside
-`/automation/terraform/<project>`, logging output to `/automation/logs`.
+`/automation/terraform/<project>`, logging output to `/automation/logs`. Flags
+are passed through to `terraform` verbatim — the CLI does **not** inject
+`-auto-approve`, so add it yourself for non-interactive `apply`/`destroy`. (The
+web UI adds it automatically for those actions.)
 
 ## Run from the web UI
 
